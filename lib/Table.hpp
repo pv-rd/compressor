@@ -4,7 +4,6 @@
 #include <fstream>
 #include <cstdint>
 #include <string>
-#include <bitset>
 
 struct Table {
     std::uint32_t * Q; // количество байт
@@ -15,13 +14,7 @@ struct Table {
     std::uint32_t size; // сумма строк (число байтов в исх файле)
 };
 
-
-std::uint16_t * indexes();
-
-std::uint16_t getNonzero(std::uint32_t * table);
-
-std::uint32_t getSize(std::uint32_t * table);
-
 Table * getTable(std::string file_name);
-void print(std::uint32_t * table);
+
 void print(Table * table);
+void report(Table * table, std::string file_name);

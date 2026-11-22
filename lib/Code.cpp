@@ -6,7 +6,7 @@
 #include "Heap.hpp"
 
 
-bool get_bit(std::uint32_t code, int pos = 0)
+bool get_bit(std::uint32_t code, int pos)
 {
     std::uint32_t mask = 1 << pos;
     return code & mask;
@@ -58,7 +58,7 @@ bool write(std::string input_name, std::string output_name, Table * T)
     std::ofstream output(output_name, std::ios::binary);
     if (!input.is_open() || !output.is_open()) return false;
 
-    for (int i = 0; i < 256; i++) output << (char) T->l[i];
+    for (int i = 0; i < 256; i++) output.put( (char) T->l[i]);
 
     char current;
     std::uint8_t buffer = 0;
@@ -71,7 +71,7 @@ bool write(std::string input_name, std::string output_name, Table * T)
         {
             if (I == 8)
             {
-                output << (char)buffer;
+                output.put((char)buffer);
                 buffer = 0;
                 I = 0;
             }
@@ -79,7 +79,7 @@ bool write(std::string input_name, std::string output_name, Table * T)
             I++;
         }
     }
-    if (I > 0) output << (char)buffer;
+    if (I > 0) output.put( (char)buffer);
     output.close(); input.close();
     return true;
 }

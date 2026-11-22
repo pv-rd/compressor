@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <cstdint>
+#include <fstream>
+#include <string>
 #include "Table.hpp"
 
 constexpr int size = 512;
@@ -29,11 +31,10 @@ int rise(std::uint16_t * heap, int i, Table * table)
 int down(std::uint16_t * heap, int i, Table * table)
 {
     int left = 2*i + 1, right = 2*i + 2, child = -1;
-    if (left >= size) left = -1;
-    if (right >= size) right = -1;
+    if (left >= size || heap[left] == size-1) left = -1;
+    if (right >= size || heap[right] == size-1) right = -1;
 
-
-    if (left >= 0 && heap[left] != size-1 && right >= 0 && heap[right] != size-1)
+    if (left >= 0 && right >= 0)
     {
         std::uint32_t Left = table->Q[heap[left]];
         std::uint32_t Right = table->Q[heap[right]];
@@ -41,8 +42,8 @@ int down(std::uint16_t * heap, int i, Table * table)
             child = right;
         else child = left;
     }
-    else if (left >= 0 && heap[left] != size-1) child = left;
-    else if (right >= 0 && heap[right] != size-1) child = right;
+    else if (left >= 0) child = left;
+    else if (right >= 0) child = right;
 
     if (child == -1) return i;
 
@@ -84,7 +85,7 @@ std::uint16_t * getHeap(Table * table)
             end++;
         }
     }
-    for (int i = end; i < size/2; i++) heap[i] = 511;
+    for (int i = end; i < size/2; i++) heap[i] = size-1;
     return heap;
 }
 
@@ -97,6 +98,22 @@ void print(std::uint16_t * heap)
         if (heap[i] == size-1) std::cout << "VOID(511)";
         else std::cout << heap[i];
         std::cout << '\n';
+    }
+}
+
+void report(std::uint16_t * heap, std::string file_name)
+{
+    std::ofstream file(file_name, std::ios::app|std::ios::binary);
+    if (file.is_open())
+    {
+        if (heap == nullptr) {file << "NO HEAP\n"; return;}
+        file << "HEAP\n";
+        for (int i = 0; i < size/2; i++)
+        {
+            file << i << '\t' << heap[i] << '\n';
+        }
+        file << "END HEAP\n";
+        file.close();
     }
 }
 
@@ -124,11 +141,11 @@ int _rise(std::uint16_t * heap, int i, Table * table)
 int _down(std::uint16_t * heap, int i, Table * table)
 {
     int left = 2*i + 1, right = 2*i + 2, child = -1;
-    if (left >= size) left = -1;
-    if (right >= size) right = -1;
+    if (left >= size || heap[left] == size-1) left = -1;
+    if (right >= size || heap[right] == size-1) right = -1;
 
 
-    if (left >= 0 && heap[left] != size-1 && right >= 0 && heap[right] != size-1)
+    if (left >= 0 && right >= 0)
     {
         std::uint8_t Left = table->l[heap[left]];
         std::uint8_t Right = table->l[heap[right]];
@@ -136,8 +153,8 @@ int _down(std::uint16_t * heap, int i, Table * table)
             child = right;
         else child = left;
     }
-    else if (left >= 0 && heap[left] != size-1) child = left;
-    else if (right >= 0 && heap[right] != size-1) child = right;
+    else if (left >= 0) child = left;
+    else if (right >= 0) child = right;
 
     if (child == -1) return i;
 

@@ -10,8 +10,7 @@ constexpr int size = 512;
 
 std::uint16_t getTree(Table * table, std::uint16_t * heap)
 {
-    int qua = 0;
-    for (int i = 0; i < size/2; i++) if (table->Q[i] != 0) qua++;
+    int qua = table->nonzero;
     std::uint16_t extra = size/2;
     while (qua > 1)
     {
