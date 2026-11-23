@@ -1,8 +1,7 @@
 #include "Code.hpp"
-#include <iostream>
 #include <fstream>
 #include <cstdint>
-#include "Table.hpp"
+#include <string>
 #include "Heap.hpp"
 
 
@@ -12,7 +11,7 @@ bool get_bit(std::uint32_t code, int pos)
     return code & mask;
 }
 
-std::uint8_t set_bit(std::uint8_t Byte, int pos, bool bit = true)
+std::uint8_t set_bit(std::uint8_t Byte, int pos, bool bit)
 {
     std::uint8_t mask = 0b10000000 >> pos;
     if (bit)
@@ -27,24 +26,24 @@ int byte_size(int bit_size)
     return (bit_size - 1) / 8 + 1;
 }
 
-void setCode(Table * table, std::uint16_t * heap)
+void setCode(std::uint32_t * table, std::uint8_t * length, std::uint16_t * heap, int nonzero)
 {
-    int end = table->nonzero-1;
-    std::uint8_t pre = _del(heap, end, table);
+    int end = nonzero-1;
+    std::uint8_t pre = del(heap, end, length);
     end--;
-    int prelen = table->l[pre];
-    table->Q[pre] = 0;
+    int prelen = length[pre];
+    table[pre] = 0;
 
     while (end >=0)
     {
-        std::uint8_t sle = _del(heap, end, table);
+        std::uint8_t sle = del(heap, end, length);
         end--;
-        int len = table->l[sle];
+        int len = length[sle];
         if (len > prelen)
         {
-            table->Q[sle] = (table->Q[pre]+1) << (len-prelen);
+            table[sle] = (table[pre]+1) << (len-prelen);
         }
-        else table->Q[sle] = table->Q[pre]+1;
+        else table[sle] = table[pre]+1;
 
         pre = sle;
         prelen = len;
@@ -52,21 +51,22 @@ void setCode(Table * table, std::uint16_t * heap)
 
 }
 
-bool write(std::string input_name, std::string output_name, Table * T)
+std::uint32_t write(std::string input_name, std::string output_name, std::uint32_t * table, std::uint8_t * Length)
 {
     std::ifstream input(input_name, std::ios::binary);
     std::ofstream output(output_name, std::ios::binary);
-    if (!input.is_open() || !output.is_open()) return false;
+    if (!input.is_open() || !output.is_open()) return 0;
 
-    for (int i = 0; i < 256; i++) output.put( (char) T->l[i]);
-
+    for (int i = 0; i < 256; i++) output.put((char)Length[i]);
+    std::uint32_t outsize = 256;
     char current;
     std::uint8_t buffer = 0;
     std::uint8_t I = 0;
     while(input.get(current))
     {
-        std::uint32_t code = T->Q[(unsigned char)current];
-        std::uint8_t length = T->l[(unsigned char)current];
+        
+        std::uint32_t code = table[(unsigned char)current];
+        std::uint8_t length = Length[(unsigned char)current];
         for (int i = length-1; i >= 0; i--)
         {
             if (I == 8)
@@ -74,12 +74,13 @@ bool write(std::string input_name, std::string output_name, Table * T)
                 output.put((char)buffer);
                 buffer = 0;
                 I = 0;
+                outsize++;
             }
             buffer = set_bit(buffer, I, get_bit(code, i));
             I++;
         }
     }
-    if (I > 0) output.put( (char)buffer);
+    if (I > 0) {outsize++; output.put( (char)buffer);}
     output.close(); input.close();
-    return true;
+    return outsize;
 }
