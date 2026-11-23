@@ -8,46 +8,48 @@ using big = std::uint32_t;
 
 int main()
 {
-    std::cout << "Enter the distribution file name: ";
-    std::string distName;
-    std::getline(std::cin, distName);
-    std::ifstream input(distName);
-    big distribution[256] = {};
-    big sum = 0;
+    std::ifstream input("distr.txt");
+    big distribution[33][256];
+    big sum[33] = {};
 
     for (int i = 0; i < 256; i++) 
     {
-        input >> distribution[i];
-        sum += distribution[i];
+        for (int j = 0; j < 33; j++)
+        {
+            input >> distribution[j][i];
+            sum[j] += distribution[j][i];
+        }
     }
     input.close();
 
-    byte * array = new byte[sum]();
-    int I = 0;
-    for (int i = 0; i < 256; i++)
-    {
-        for (int j = 0; j < distribution[i]; j++)
-        {
-            array[I] = (byte)i; I++;
-        }
-    }
-
-    std::cout << "Enter the output file size: ";
-    big size = 0; 
-    std::cin >> size;
-
     const int seed = 10111;
     std::default_random_engine engine(seed);
-
-    const big min = 0, max = sum;
-    std::uniform_int_distribution <big> distr(min, max);
-    
-    std::ofstream output("random.txt");
-    for (big i = 0; i < size; i++)
+    big size = 1024*1024;
+    for (int k = 0; k < 100; k++)
     {
-        output << (char) array[distr(engine)];
+        int j = 16;
+        byte * array = new byte[sum[j]]();
+        int I = 0;
+        for (int i = 0; i < 256; i++)
+        {
+            for (int k = 0; k < distribution[j][i]; k++)
+            {
+                array[I] = (byte)i; I++;
+            }
+        }
+
+        const big min = 0, max = sum[j];
+        std::uniform_int_distribution <big> distr(min, max);
+        
+        std::ofstream output(std::to_string(k) + ".txt");
+
+        for (big i = 0; i < size; i++)
+        {
+            output << (char) array[distr(engine)];
+        }
+        size += 1024*1024;
+        output.close();
+        delete[] array;
     }
-    output.close();
-    
     return 0;
 }
